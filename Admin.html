@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Landscaping Admin Dashboard</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f3f5f2;
+    color:#222;
+}
+
+/* LOGIN */
+#login{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.login-box{
+    width:320px;
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:8px;
+    background:#2e7d32;
+    color:white;
+    cursor:pointer;
+}
+
+/* DASHBOARD */
+#dashboard{
+    display:none;
+}
+
+.header{
+    background:#1b5e20;
+    color:white;
+    padding:15px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.container{
+    display:grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap:20px;
+    padding:20px;
+}
+
+/* PANELS */
+.panel{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* CALENDAR */
+.month-block{
+    margin-bottom:20px;
+}
+
+.month-title{
+    font-weight:bold;
+    margin:10px 0;
+    color:#2e7d32;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:5px;
+}
+
+.day{
+    background:#f8f8f8;
+    border:1px solid #ddd;
+    padding:10px;
+    text-align:center;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    position:relative;
+}
+
+.day:hover{
+    background:#e8f5e9;
+}
+
+.selected{
+    background:#2e7d32;
+    color:white;
+}
+
+/* RED BADGE */
+.badge{
+    position:absolute;
+    top:2px;
+    right:2px;
+    background:red;
+    color:white;
+    border-radius:50%;
+    width:18px;
+    height:18px;
+    font-size:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* LIST */
+.card{
+    background:white;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h3{
+    margin:0;
+    color:#2e7d32;
+}
+
+.delete{
+    background:#c62828;
+    margin-top:8px;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+    <div class="login-box">
+        <h2>Admin Login</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+<div class="header">
+    <h2>🌿 Landscaping Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+    <!-- CALENDAR -->
+    <div class="panel">
+        <h3 style="color:#2e7d32;">Calendar</h3>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- LIST -->
+    <div class="panel">
+        <h3>Appointments (<span id="count">0</span>)</h3>
+        <div id="list"></div>
+    </div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    onSnapshot,
+    deleteDoc,
+    doc,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCCmgHZXEX3-6RT7bqEfQytHbfpxD7GMTM",
+  authDomain: "landscapingform.firebaseapp.com",
+  projectId: "landscapingform",
+  storageBucket: "landscapingform.firebasestorage.app",
+  messagingSenderId: "233664675176",
+  appId: "1:233664675176:web:493b8ce3153acc9dd1eadd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let all = [];
+let selectedDate = null;
+
+/* LOGIN */
+window.login = async function(){
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+
+    await signInWithEmailAndPassword(auth,email,pass);
+};
+
+window.logout = function(){
+    signOut(auth);
+};
+
+onAuthStateChanged(auth,user=>{
+    if(user){
+        document.getElementById("login").style.display="none";
+        document.getElementById("dashboard").style.display="block";
+        load();
+    }else{
+        document.getElementById("login").style.display="flex";
+        document.getElementById("dashboard").style.display="none";
+    }
+});
+
+/* LOAD DATA */
+function load(){
+    const q = query(collection(db,"appointments"),orderBy("submitted","asc"));
+
+    onSnapshot(q,snap=>{
+        all = [];
+
+        snap.forEach(d=>{
+            all.push({id:d.id,...d.data()});
+        });
+
+        renderCalendar();
+        renderList();
+    });
+}
+
+/* COUNT PER DAY */
+function getCounts(){
+    const c = {};
+    all.forEach(a=>{
+        c[a.date] = (c[a.date] || 0) + 1;
+    });
+    return c;
+}
+
+/* CALENDAR */
+function renderCalendar(){
+
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
+
+    const counts = getCounts();
+    const now = new Date();
+
+    for(let m=0;m<2;m++){
+
+        const d = new Date(now.getFullYear(), now.getMonth()+m, 1);
+
+        const month = d.toLocaleString('default',{month:'long'});
+        const year = d.getFullYear();
+        const days = new Date(year, d.getMonth()+1,0).getDate();
+
+        let html = `
+        <div class="month-block">
+        <div class="month-title">${month} ${year}</div>
+        <div class="grid">`;
+
+        for(let i=1;i<=days;i++){
+
+            const dateStr =
+                `${year}-${String(d.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+
+            const count = counts[dateStr] || 0;
+
+            html += `
+            <div class="day ${selectedDate===dateStr?'selected':''}"
+            onclick="selectDate('${dateStr}')">
+
+                ${i}
+
+                ${count>0 ? `<div class="badge">${count}</div>` : ""}
+            </div>`;
+        }
+
+        html += "</div></div>";
+
+        cal.innerHTML += html;
+    }
+}
+
+/* LIST */
+function renderList(){
+
+    let data = [...all];
+
+    if(selectedDate){
+        data = data.filter(a=>a.date === selectedDate);
+    }
+
+    document.getElementById("count").innerText = data.length;
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    data.forEach(a=>{
+        list.innerHTML += `
+        <div class="card">
+            <h3>${a.name}</h3>
+            <p>${a.email}</p>
+            <p>${a.address}</p>
+            <p>${a.date} @ ${a.time}</p>
+
+            <button class="delete" onclick="remove('${a.id}')">
+                Delete (Completed)
+            </button>
+        </div>`;
+    });
+}
+
+/* DELETE */
+window.remove = async function(id){
+    await deleteDoc(doc(db,"appointments",id));
+};
+
+/* SELECT DATE */
+window.selectDate = function(date){
+    selectedDate = date;
+    renderCalendar();
+    renderList();
+};
+
+</script>
+
+</body>
+</html>
