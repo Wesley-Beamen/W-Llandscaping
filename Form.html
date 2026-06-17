@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>W&L landscaping</title>
 
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="Images/Logo.png">
+
 <style>
 *{
 margin:0;
@@ -36,19 +39,22 @@ top:0;
 z-index:1000;
 }
 
-nav .logo{
-font-weight:bold;
-color:#2e7d32;
-font-size:1.4rem;
+.logo-img{
+height:55px;
+width:auto;
+object-fit:contain;
+transition:transform 0.3s ease;
+}
+
+.logo-img:hover{
+transform:scale(1.05);
 }
 
 nav a{
 margin-left:15px;
 text-decoration:none;
 color:#333;
-transition:
-color 0.3s ease,
-transform 0.3s ease;
+transition:color 0.3s ease, transform 0.3s ease;
 display:inline-block;
 }
 
@@ -93,14 +99,7 @@ padding:12px 25px;
 border-radius:8px;
 text-decoration:none;
 display:inline-block;
-
-```
-transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    background 0.3s ease;
-```
-
+transition:transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
 .btn:hover{
@@ -138,13 +137,7 @@ background:white;
 border-radius:14px;
 overflow:hidden;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
-
-```
-transition:
-    transform 0.35s ease,
-    box-shadow 0.35s ease;
-```
-
+transition:transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 .card:hover{
@@ -156,11 +149,7 @@ box-shadow:0 18px 35px rgba(0,0,0,0.15);
 width:100%;
 height:220px;
 object-fit:cover;
-
-```
 transition:transform 0.45s ease;
-```
-
 }
 
 .card:hover img{
@@ -183,13 +172,7 @@ border-radius:14px;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
 max-width:600px;
 margin:auto;
-
-```
-transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-```
-
+transition:transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-box:hover{
@@ -204,14 +187,7 @@ margin-top:12px;
 border:1px solid #d5d5d5;
 border-radius:10px;
 font-size:15px;
-
-```
-transition:
-    border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.25s ease;
-```
-
+transition:border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 input:hover{
@@ -237,14 +213,7 @@ border:none;
 border-radius:10px;
 cursor:pointer;
 font-size:15px;
-
-```
-transition:
-    transform 0.25s ease,
-    background 0.25s ease,
-    box-shadow 0.25s ease;
-```
-
+transition:transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 button:hover{
@@ -277,66 +246,40 @@ from{
 opacity:0;
 transform:translateY(30px);
 }
-
-```
 to{
-    opacity:1;
-    transform:translateY(0);
+opacity:1;
+transform:translateY(0);
 }
-```
-
 }
 
-.hero h1{
-animation:fadeUp .8s ease;
-}
-
-.hero p{
-animation:fadeUp 1s ease;
-}
-
-.hero .btn{
-animation:fadeUp 1.2s ease;
-}
-
-.card{
-animation:fadeUp .7s ease;
-}
-
-.form-box{
-animation:fadeUp .8s ease;
-}
+.hero h1{ animation:fadeUp .8s ease; }
+.hero p{ animation:fadeUp 1s ease; }
+.hero .btn{ animation:fadeUp 1.2s ease; }
+.card{ animation:fadeUp .7s ease; }
+.form-box{ animation:fadeUp .8s ease; }
 
 /* MOBILE */
 @media(max-width:768px){
-
-```
-.hero h1{
-    font-size:2.2rem;
-}
-
-.hero p{
-    font-size:1rem;
-}
+.hero h1{ font-size:2.2rem; }
+.hero p{ font-size:1rem; }
 
 nav{
-    flex-direction:column;
-    gap:10px;
+flex-direction:column;
+gap:10px;
 }
 
 .services{
-    grid-template-columns:1fr;
+grid-template-columns:1fr;
 }
-```
-
 }
-
 </style>
 </head>
 <body>
 
 <nav>
-    <div class="logo">W&L landscaping</div>
+    <div class="logo">
+        <img src="Images/Logo.png" class="logo-img" alt="W&L Landscaping Logo">
+    </div>
     <div>
         <a href="#services">Services</a>
         <a href="#book">Book</a>
@@ -368,7 +311,6 @@ nav{
                 <img src="Images/Edger.webp">
                 <div class="card-content">
                     <h3>Edging</h3>
-                    
                 </div>
             </div>
 
@@ -376,7 +318,6 @@ nav{
                 <img src="Images/weedwacker.jpg">
                 <div class="card-content">
                     <h3>Weed Wacking</h3>
-                    
                 </div>
             </div>
 
@@ -446,12 +387,10 @@ function validate(dateStr, timeStr){
     const now = new Date();
     const selected = new Date(dateStr + "T" + timeStr);
 
-    // past check
     if(selected < now){
         return "Cannot book past dates.";
     }
 
-    // 2 year limit
     const max = new Date();
     max.setFullYear(max.getFullYear() + 2);
 
@@ -459,7 +398,6 @@ function validate(dateStr, timeStr){
         return "Cannot book more than 2 years ahead.";
     }
 
-    // business hours
     const hour = parseInt(timeStr.split(":")[0]);
     if(hour < 6 || hour >= 20){
         return "Bookings allowed only 6AM - 8PM.";
