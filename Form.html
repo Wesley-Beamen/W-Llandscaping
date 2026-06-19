@@ -600,18 +600,32 @@ form.addEventListener("submit", async (e)=>{
     }
 
     try{
-        await addDoc(collection(db,"appointments"),{
+
+    await addDoc(collection(db,"appointments"),{
+        name,
+        email,
+        address,
+        date,
+        time,
+        submitted: serverTimestamp()
+    });
+
+    await emailjs.send(
+        "service_x217rhb",
+        "template_7xm71fn",
+        {
             name,
             email,
             address,
             date,
-            time,
-            submitted: serverTimestamp()
-        });
+            time
+        }
+    );
 
-        status.innerText = "Appointment submitted!";
-        status.style.color = "green";
-        form.reset();
+    status.innerText = "Appointment submitted!";
+    status.style.color = "green";
+
+    form.reset();
 
     }catch(err){
         console.error(err);
