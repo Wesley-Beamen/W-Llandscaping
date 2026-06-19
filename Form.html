@@ -522,6 +522,31 @@ padding:12px;
     © 2026 Landscaping Company
 </footer>
 
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+emailjs.init({
+    publicKey: "k-ECQPMI84I6P27Ci"
+});
+</script>
+
+<!-- Firebase -->
+<script type="module">
+
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+// Your Firebase code here...
+
+</script>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
