@@ -523,6 +523,7 @@ padding:12px;
 </footer>
 
 <!-- EmailJS -->
+<!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
@@ -531,22 +532,7 @@ emailjs.init({
 });
 </script>
 
-<!-- Firebase -->
-<script type="module">
-
-// Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-import {
-    getFirestore,
-    collection,
-    addDoc,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
-
-// Your Firebase code here...
-
-</script>
-
+<!-- FIREBASE + FORM LOGIC -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
@@ -572,12 +558,12 @@ const db = getFirestore(app);
 const form = document.getElementById("appointmentForm");
 const status = document.getElementById("status");
 
-/* EMAIL VALIDATION */
+/* EMAIL CHECK */
 function validEmail(email){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/* DATE/TIME VALIDATION */
+/* DATE/TIME CHECK */
 function validate(dateStr, timeStr){
 
     const now = new Date();
@@ -629,7 +615,7 @@ form.addEventListener("submit", async (e) => {
 
     try{
 
-        /* SAVE TO FIREBASE */
+        // SAVE TO FIREBASE
         await addDoc(collection(db,"appointments"),{
             name,
             email,
@@ -639,16 +625,16 @@ form.addEventListener("submit", async (e) => {
             submitted: serverTimestamp()
         });
 
-        /* SEND EMAIL */
+        // SEND EMAIL VIA EMAILJS
         await emailjs.send(
             "service_x217rhb",
             "template_7xm71fn",
             {
-                name: name,
-                email: email,
-                address: address,
-                date: date,
-                time: time
+                name,
+                email,
+                address,
+                date,
+                time
             }
         );
 
@@ -659,9 +645,9 @@ form.addEventListener("submit", async (e) => {
 
     }catch(err){
 
-        console.error(err);
+        console.error("ERROR:", err);
 
-        status.innerText = "Error submitting form.";
+        status.innerText = err?.text || "Error submitting form.";
         status.style.color = "red";
     }
 
