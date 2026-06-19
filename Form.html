@@ -547,12 +547,12 @@ const db = getFirestore(app);
 const form = document.getElementById("appointmentForm");
 const status = document.getElementById("status");
 
-/* EMAIL CHECK */
+/* EMAIL VALIDATION */
 function validEmail(email){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/* DATE/TIME CHECK */
+/* DATE/TIME VALIDATION */
 function validate(dateStr, timeStr){
 
     const now = new Date();
@@ -570,6 +570,7 @@ function validate(dateStr, timeStr){
     }
 
     const hour = parseInt(timeStr.split(":")[0]);
+
     if(hour < 6 || hour >= 20){
         return "Bookings allowed only 6AM - 8PM.";
     }
@@ -577,7 +578,8 @@ function validate(dateStr, timeStr){
     return null;
 }
 
-form.addEventListener("submit", async (e)=>{
+form.addEventListener("submit", async (e) => {
+
     e.preventDefault();
 
     const name = document.getElementById("name").value.trim();
@@ -593,6 +595,7 @@ form.addEventListener("submit", async (e)=>{
     }
 
     const error = validate(date, time);
+
     if(error){
         status.innerText = error;
         status.style.color = "red";
@@ -601,34 +604,38 @@ form.addEventListener("submit", async (e)=>{
 
     try{
 
-    await addDoc(collection(db,"appointments"),{
-        name,
-        email,
-        address,
-        date,
-        time,
-        submitted: serverTimestamp()
-    });
-
-    await emailjs.send(
-        "service_x217rhb",
-        "template_7xm71fn",
-        {
+        /* SAVE TO FIREBASE */
+        await addDoc(collection(db,"appointments"),{
             name,
             email,
             address,
             date,
-            time
-        }
-    );
+            time,
+            submitted: serverTimestamp()
+        });
 
-    status.innerText = "Appointment submitted!";
-    status.style.color = "green";
+        /* SEND EMAIL */
+        await emailjs.send(
+            "service_x217rhb",
+            "template_7xm71fn",
+            {
+                name: name,
+                email: email,
+                address: address,
+                date: date,
+                time: time
+            }
+        );
 
-    form.reset();
+        status.innerText = "Appointment submitted!";
+        status.style.color = "green";
+
+        form.reset();
 
     }catch(err){
+
         console.error(err);
+
         status.innerText = "Error submitting form.";
         status.style.color = "red";
     }
